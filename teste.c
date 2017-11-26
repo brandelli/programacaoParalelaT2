@@ -1,37 +1,40 @@
-#include <omp.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <omp.h>
+#define ARRAY_SIZE 100000      // trabalho final com o valores 10.000, 100.000, 1.000.000
 
-#define n 10
-
-int main (int argc, char *argv[]) 
-{
-int   i,j,aux;
-int vet[10] = {8,89,12,3,6,65,43,21,12,1}; 
-int chunk = 4;
-
-
-for(i=0;i<n;i++)
-  printf("  %d",vet[i]);
-
-printf("\n");
-
-
-for(j=n-1; j >= 1; j--) {
- 
-#pragma omp parallel for schedule (static, chunk) shared(vet,chunk) private(i)
-  for (i=0; i < n-1; i++){
-    if(vet[i]>vet[i+1]){
-      aux=vet[i];
-      vet[i]=vet[i+1];
-      vet[i+1]=aux;      
+void bubbleSort(int n, int * vetor){
+    int i, tmp, phase;
+    #pragma omp parallel num_threads(4) shared(vetor, n) private(i, tmp, phase)
+    for(phase = 0; phase < n; phase++){
+        if(phase % 2 == 0){
+            #pragma omp for
+            for(i = 1; i < n; i+=2){
+                if(vetor[i-1] > vetor[i]){
+                    tmp = vetor[i-1];
+                    vetor[i-1] = vetor[i];
+                    vetor[i] = tmp;
+                }
+            }
+        }else{
+            for(i = 1; i < -1; i+=2){
+                if(vetor[i] > vetor[i + 1]){
+                    tmp = vetor[i-1];
+                    vetor[i-1] = vetor[i];
+                    vetor[i] = tmp;
+                }
+            }
+        }
     }
-  }
 }
 
+int main(){
+    int vetor[ARRAY_SIZE];
 
-for(i=0;i<n;i++)
-  printf("  %d",vet[i]);
+    for(int i = 0 ; i<ARRAY_SIZE; i++){
+        vetor[i] = ARRAY_SIZE-i;
+    }
 
-printf("\n");
+    bubbleSort(ARRAY_SIZE, vetor);
+    return 0;
 }
